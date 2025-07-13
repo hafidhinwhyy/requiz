@@ -26,6 +26,8 @@ return new class extends Migration
             $table->enum('pendidikan', ['SMA/Sederajat', 'Diploma', 'S1', 'S2', 'S3']);
             $table->string('universitas');
             $table->string('jurusan');
+            $table->string('thn_lulus')->nullable();
+            $table->text('skills')->nullable();
             $table->string('cv_document');
             $table->enum('status', [
                 'Seleksi Administrasi',

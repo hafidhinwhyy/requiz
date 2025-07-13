@@ -16,11 +16,11 @@ class PositionController extends Controller
         return view('admin.batch.position.index', compact('positions'));
     }
 
-    public function create($slug)
-    {
-        $batchs = Batch::where('slug', $slug)->first();
-        return view('admin.batch.position.create', compact('batchs'));
-    }
+    // public function create($slug)
+    // {
+    //     $batchs = Batch::where('slug', $slug)->first();
+    //     return view('admin.batch.position.create', compact('batchs'));
+    // }
 
     // public function store(Request $request, Batch $batch)
     // {
@@ -39,56 +39,61 @@ class PositionController extends Controller
     //     return redirect('batch.index')->with('success', 'New Position has been added!');
 
     // }
-    public function store(Request $request, $batchId)
+    public function store(Request $request, Batch $batch)
     {
-        $request->validate([
+        // 1. Validasi semua data yang masuk dari form
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'quota' => 'required|integer|min:1',
-            'status' => 'required|in:Active,Inactive',
+            'status' => 'required|string',
+            'description' => 'required|string', // Validasi untuk Trix Editor
+        ]);
+
+        // 2. Buat posisi baru menggunakan relasi dari Batch
+        // Ini secara otomatis akan mengisi 'batch_id'
+        $batch->position()->create($validated);
+
+        // 3. Arahkan kembali ke halaman sebelumnya dengan pesan sukses
+        return redirect()->route('batch.index')->with('success', 'Posisi baru telah berhasil ditambahkan!');
+    }
+
+    public function update(Request $request, Position $position)
+    {
+        // 1. Validasi data yang masuk
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'quota' => 'required|integer|min:1',
+            'status' => 'required|string',
             'description' => 'required|string',
         ]);
 
-        $batch = Batch::findOrFail($batchId);
-
-        $position = new Position([
-            'name' => $request->name,
-            'quota' => $request->quota,
-            'status' => $request->status,
-            'description' => strip_tags($request->description),
-        ]);
-
-        $position->batch()->associate($batch);
-        $position->save();
-
-        return redirect()->route('batch.index')->with('success', 'Posisi baru berhasil ditambahkan ke batch ' . $batch->name);
-    }
-    
-    public function edit($id)
-    {
-        $positions = Position::findOrFail($id);
-        return view('admin.position.edit', compact('positions'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'quota' => 'required|integer',
-            'status' => 'required',
-            'description' => 'required',
-        ]);
-
-        $position = Position::findOrFail($id);
-
-        // Deteksi perubahan name agar slug bisa regenerate
-        if ($validated['name'] !== $position->name) {
-            $position->slug = null; // trigger slug regeneration
-        }
-
+        // 2. Update posisi menggunakan data yang sudah divalidasi
         $position->update($validated);
 
-        return redirect()->route('position.index')->with('success', 'Position has been updated!');
+        // 3. Arahkan kembali dengan pesan sukses
+        return redirect()->route('batch.index')->with('success', 'Posisi telah berhasil diperbarui!');
     }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'quota' => 'required|integer',
+    //         'status' => 'required',
+    //         'description' => 'required',
+    //     ]);
+
+    //     $position = Position::findOrFail($id);
+
+    //     // Deteksi perubahan name agar slug bisa regenerate
+    //     if ($validated['name'] !== $position->name) {
+    //         $position->slug = null; // trigger slug regeneration
+    //     }
+
+    //     $position->update($validated);
+
+    //     return redirect()->route('position.index')->with('success', 'Position has been updated!');
+    // }
 
     public function destroy($id)
     {

@@ -12,15 +12,8 @@ class BatchController extends Controller
 {
     public function index()
     {
-        // $batchs = Batch::with('position')->first(); // atau where('name', 'Batch Pertama')->first();
-        // $batchs = Batch::where('status', 'Active')->with('position')->get();
         $batchs = Batch::with('position')->orderBy('id', 'asc')->get();
         return view('admin.batch.index', compact('batchs'));
-    }
-
-    public function create()
-    {
-        return view('admin.batch.create');
     }
 
     public function store(Request $request)
@@ -33,20 +26,12 @@ class BatchController extends Controller
             'end_date' => 'date',
         ]);
 
-        // $validated['description'] = strip_tags($request->description);
-
         Batch::create($validated);
 
         return redirect()->route('batch.index')->with('success', 'New Batch has been added!');
     }
 
-    public function edit($id)
-    {
-        $batchs = Batch::findOrFail($id);
-        return view('admin.batch.edit', compact('batchs'));
-    }
-
-    public function update(Request $request, Batch $batchs, $id)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',

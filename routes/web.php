@@ -35,14 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     Route::get('lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
-    Route::get('{batchSlug}/{positionSlug}/apply', [LowonganController::class, 'create'])->name('apply.create');
-    // Route::post('{batchSlug}/{positionSlug}/apply', [LowonganController::class, 'store'])->name('apply.store');
-    // Route::get('{slug}/{slug}/apply', [LowonganController::class, 'create'])->name('apply.create');
-    Route::post('/{positionSlug}/apply', [LowonganController::class, 'store'])->name('apply.store');
-    // Route::get('/{batchSlug}/{positionSlug}/apply', [LowonganController::class, 'apply'])->name('apply.store');
-
-
-    
+    Route::post('/{position:slug}/apply', [LowonganController::class, 'store'])->name('apply.store');
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
 
 
@@ -56,27 +49,20 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
     Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('admin/batch/position', [PositionController::class, 'index'])->name('position.index');
-    Route::get('admin/batch/position/create', [PositionController::class, 'create'])->name('position.create');
-    // Tambahkan di bawah group admin atau sesuai struktur kamu
-    Route::post('admin/batch/{batch}/position', [PositionController::class, 'store'])->name('position.store');
-    Route::get('admin/batch/position/{id}/edit', [PositionController::class, 'edit'])->name('position.edit');
-    Route::put('admin/batch/position/{id}', [PositionController::class, 'update'])->name('position.update');
-    Route::delete('admin/batch/position/{id}', [PositionController::class, 'destroy'])->name('position.destroy');
-    Route::get('admin/batch/position/checkSlug', [PositionController::class, 'checkSlug'])->name('position.checkSlug');
-    
     Route::get('admin/batch', [BatchController::class, 'index'])->name('batch.index');
-    Route::get('admin/batch/create', [BatchController::class, 'create'])->name('batch.create');
     Route::post('admin/batch', [BatchController::class, 'store'])->name('batch.store');
-    Route::get('admin/batch/{id}/edit', [BatchController::class, 'edit'])->name('batch.edit');
     Route::put('admin/batch/{id}', [BatchController::class, 'update'])->name('batch.update');
     Route::delete('admin/batch/{id}', [BatchController::class, 'destroy'])->name('batch.destroy');
     Route::get('admin/batch/checkSlug', [BatchController::class, 'checkSlug'])->name('batch.checkSlug');
 
+    Route::post('admin/batch/{batch}/position', [PositionController::class, 'store'])->name('position.store');
+    Route::put('admin/position/{position}', [PositionController::class, 'update'])->name('position.update');
+    Route::delete('admin/batch/position/{id}', [PositionController::class, 'destroy'])->name('position.destroy');
+    Route::get('admin/batch/position/checkSlug', [PositionController::class, 'checkSlug'])->name('position.checkSlug');
+
     Route::get('admin/applicant', [ApplicantController::class, 'index'])->name('applicant.index');
     Route::get('admin/applicant/{id}/show', [ApplicantController::class, 'show'])->name('applicant.show');
     Route::put('/admin/applicant/{id}', [ApplicantController::class, 'update'])->name('applicant.update');
-    // Route::get('admin/applicant/search-applicant', [ApplicantController::class, 'search'])->name('applicant.search'); // 👈 Tambahkan ini
     Route::post('/admin/applicant/update-status', [ApplicantController::class, 'updateStatus'])->name('applicant.update.status');
     
     // Menampilkan daftar test

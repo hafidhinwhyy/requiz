@@ -9,58 +9,80 @@ use Illuminate\Support\Facades\Storage;
 
 class ApplicantController extends Controller
 {
-    // public function index()
-    // {
-    //     $applicants = Applicant::with('position')->groupBy('status')->get();
-    //     return view('admin.applicant.index', compact('applicants'));
-    // }
+    public function index(Request $request)
+    {
+        // Ambil kata kunci pencarian dari request
+        $search = $request->input('search');
+
+        // Query dasar dengan relasi dan urutan
+        $query = Applicant::with('position')->orderBy('name', 'asc');
+
+        // Terapkan filter pencarian HANYA JIKA ada input 'search'
+        $query->when($search, function ($q, $search) {
+            return $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhereRaw("DATE_PART('year', AGE(CURRENT_DATE, tgl_lahir)) = ?", [(int) $search])
+                      ->orWhereHas('position', function ($subQ) use ($search) {
+                         $subQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%']);
+                     });
+        });
+
+        // Lakukan paginasi pada hasil query
+        $applicants = $query->paginate(15);
+
+        // Kirim data ke view
+        return view('admin.applicant.index', compact('applicants'));
+    }
 
     // $groupedApplicants = $applicants->groupBy('status');
     
-    public function index(Request $request)
-    {
-        // =======================
-        // FILTER: All Pelamar
-        // =======================
-        $searchAll = $request->input('search_all');
-        $queryAll = Applicant::with('position');
+    // public function index(Request $request)
+    // {
+    //     // =======================
+    //     // FILTER: All Pelamar
+    //     // =======================
+    //     $searchAll = $request->input('search_all');
+    //     $queryAll = Applicant::with('position');
 
-        if (!empty($searchAll)) {
-            $queryAll->where(function ($q) use ($searchAll) {
-                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchAll) . '%'])
-                ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($searchAll) . '%'])
-                ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($searchAll) . '%'])
-                ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($searchAll) . '%'])
-                ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($searchAll) . '%']);
-            })->orWhereHas('position', function ($q) use ($searchAll) {
-                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchAll) . '%']);
-            });
-        }
+    //     if (!empty($searchAll)) {
+    //         $queryAll->where(function ($q) use ($searchAll) {
+    //             $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchAll) . '%'])
+    //             ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($searchAll) . '%'])
+    //             ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($searchAll) . '%'])
+    //             ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($searchAll) . '%'])
+    //             ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($searchAll) . '%']);
+    //         })->orWhereHas('position', function ($q) use ($searchAll) {
+    //             $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchAll) . '%']);
+    //         });
+    //     }
 
-        $applicantAll = $queryAll->orderBy('name')->paginate(10)->withQueryString();
+    //     $applicantAll = $queryAll->orderBy('name')->paginate(10)->withQueryString();
 
-        // =======================
-        // FILTER: Screening
-        // =======================
-        $searchScreening = $request->input('search_screening');
-        $screeningQuery = Applicant::with('position')
-            ->where('status', 'Seleksi Administrasi');
+    //     // =======================
+    //     // FILTER: Screening
+    //     // =======================
+    //     $searchScreening = $request->input('search_screening');
+    //     $screeningQuery = Applicant::with('position')
+    //         ->where('status', 'Seleksi Administrasi');
 
-        if (!empty($searchScreening)) {
-            $screeningQuery->where(function ($q) use ($searchScreening) {
-                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
-                ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
-                ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
-                ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($searchScreening) . '%']);
-            });
-        }
+    //     if (!empty($searchScreening)) {
+    //         $screeningQuery->where(function ($q) use ($searchScreening) {
+    //             $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
+    //             ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
+    //             ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($searchScreening) . '%'])
+    //             ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($searchScreening) . '%']);
+    //         });
+    //     }
 
-        $applicants = $screeningQuery->get()
-            ->sortBy('name')
-            ->groupBy(fn ($item) => $item->position->name ?? 'Tanpa Posisi');
+    //     $applicants = $screeningQuery->get()
+    //         ->sortBy('name')
+    //         ->groupBy(fn ($item) => $item->position->name ?? 'Tanpa Posisi');
 
-        return view('admin.applicant.index', compact('applicants', 'applicantAll'));
-    }
+    //     return view('admin.applicant.index', compact('applicants', 'applicantAll'));
+    // }
 
 
 

@@ -24,6 +24,8 @@ class Applicant extends Model
         'pendidikan',
         'universitas',
         'jurusan',
+        'thn_lulus',
+        'skills',
         'cv_document',
     ];
 
