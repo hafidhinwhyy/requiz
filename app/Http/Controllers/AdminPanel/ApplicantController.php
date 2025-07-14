@@ -50,7 +50,10 @@ class ApplicantController extends Controller
             return $q->where(function($subQ) use ($search) {
                 $subQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%'])
                     ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($search) . '%'])
-                    // ... dan seterusnya untuk pencarian umum
+                    ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($search) . '%'])
+                    ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($search) . '%'])
+                    ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($search) . '%'])
+                    ->orWhereRaw("DATE_PART('year', AGE(CURRENT_DATE, tgl_lahir)) = ?", [(int) $search])
                     ->orWhereHas('position', function ($posQ) use ($search) {
                         $posQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%']);
                     });
@@ -70,6 +73,58 @@ class ApplicantController extends Controller
         });
 
         return $query;
+    }
+
+    /**
+     * BARU: Method untuk memperbarui data pelamar.
+     */
+    public function update(Request $request, Applicant $applicant)
+    {
+        // Validasi data (termasuk alamat dan thn_lulus yang sudah diperbaiki di form)
+        $validatedData = $request->validate([
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|max:255',
+            'nik'         => 'required|string|max:16',
+            'no_telp'     => 'required|string|max:14',
+            'tpt_lahir'   => 'required|string|max:255',
+            'tgl_lahir'   => 'required|date',
+            'alamat'      => 'required|string|max:255', // Pastikan field ini ada di form
+            'pendidikan'  => 'required|string|max:255',
+            'universitas' => 'required|string|max:255',
+            'jurusan'     => 'required|string|max:255',
+            'thn_lulus'   => 'required|string|max:4',  // Pastikan name="thn_lulus" di form
+            'status'      => 'required|string',
+            'cv_document' => 'nullable|file|mimes:pdf|max:3072', // max 3MB
+            'position_id' => 'required|exists:positions,id',
+            // 'skills' tidak perlu divalidasi jika readonly, kecuali ingin bisa diubah
+        ]);
+
+        // Cek jika ada file CV baru yang di-upload
+        if ($request->hasFile('cv_document')) {
+            // Hapus file lama jika ada
+            if ($applicant->cv_document) {
+                Storage::delete('public/' . $applicant->cv_document);
+            }
+            // Simpan file baru dan dapatkan path-nya
+            $path = $request->file('cv_document')->store('cv_documents', 'public');
+            $validatedData['cv_document'] = $path;
+        }
+
+        // Update data pelamar
+        $applicant->update($validatedData);
+
+        // Redirect kembali ke halaman index dengan pesan sukses
+        // Pastikan route 'applicant.index' ada, jika tidak sesuaikan (misal: 'admin.applicant.index')
+        return redirect()->route('applicant.index')->with('success', 'Data pelamar berhasil diperbarui.');
+    }
+
+    /**
+     * BARU: Method untuk menghapus data pelamar.
+     */
+    public function destroy(Applicant $applicant)
+    {
+        $applicant->delete();
+        return redirect()->route('applicant.index')->with('success', 'Data pelamar berhasil dihapus.');
     }
 }
 

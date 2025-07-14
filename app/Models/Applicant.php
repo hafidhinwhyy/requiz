@@ -27,14 +27,15 @@ class Applicant extends Model
         'thn_lulus',
         'skills',
         'cv_document',
+        'status',
     ];
 
     // Di model Applicant
-    protected $appends = ['pendidikan', 'universitas']; // Sesuaikan dengan kolom actual
+    // protected $appends = ['pendidikan', 'universitas']; // Sesuaikan dengan kolom actual
 
     public function position()
     {
-        return $this->belongsTo(Position::class, 'position_id');
+        return $this->belongsTo(Position::class);
     }
 
     public function batch()

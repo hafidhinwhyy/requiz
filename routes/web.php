@@ -61,11 +61,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('admin/batch/position/checkSlug', [PositionController::class, 'checkSlug'])->name('position.checkSlug');
 
     Route::get('admin/applicant', [ApplicantController::class, 'index'])->name('applicant.index');
-    Route::get('admin/applicant/{id}/show', [ApplicantController::class, 'show'])->name('applicant.show');
-    Route::put('/admin/applicant/{id}', [ApplicantController::class, 'update'])->name('applicant.update');
-    Route::post('/admin/applicant/update-status', [ApplicantController::class, 'updateStatus'])->name('applicant.update.status');
-
     Route::get('/admin/applicant/export', [ApplicantController::class, 'export'])->name('admin.applicant.export');
+    Route::put('admin/applicant/{applicant}', [ApplicantController::class, 'update'])->name('admin.applicant.update');
+    Route::delete('admin/applicant/{applicant}', [ApplicantController::class, 'destroy'])->name('admin.applicant.destroy');
 
     
     // Menampilkan daftar test
