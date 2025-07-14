@@ -12,20 +12,90 @@
 
                     <!-- Baris untuk Form Pencarian dan Tombol Export -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <!-- Tombol Export Excel -->
+
                         <div>
-                            {{-- Tombol ini mengarah ke route export dengan membawa parameter pencarian saat ini --}}
                             <a href="{{ route('admin.applicant.export', ['search' => request('search')]) }}"
                                 class="btn btn-success">
                                 Export Excel
                             </a>
                         </div>
-                        <!-- Form Pencarian -->
-                        <form action="{{ route('applicant.index') }}" method="GET" class="d-flex">
-                            <input type="text" class="form-control me-2" name="search" placeholder="Search.."
-                                value="{{ request('search') }}">
-                            <button class="btn btn-primary" type="submit">Cari</button>
-                        </form>
+
+                        <div class="d-flex align-items-center">
+                            <form action="{{ route('applicant.index') }}" method="GET" class="d-flex">
+                                <input type="text" class="form-control me-2" name="search" placeholder="Search.."
+                                    value="{{ request('search') }}">
+                                <button class="btn btn-primary" type="submit">Cari</button>
+                            </form>
+
+                            <button type="button" class="btn btn-light ms-3" data-bs-toggle="modal"
+                                data-bs-target="#filterModal">
+                                <i class="bi bi-filter fs-4"></i>
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ route('applicant.index') }}" method="GET">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="filterModalLabel">Filter Options</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="statusFilter" class="form-label">Status</label>
+                                                <select class="form-select" name="status" id="statusFilter">
+                                                    <option value="">Semua Status</option>
+                                                    <option value="Seleksi Administrasi"
+                                                        {{ request('status') == 'Seleksi Administrasi' ? 'selected' : '' }}>
+                                                        Seleksi Administrasi
+                                                    </option>
+                                                    <option value="Tidak Lolos Seleksi Administrasi"
+                                                        {{ request('status') == 'Tidak Lolos Seleksi Administrasi' ? 'selected' : '' }}>
+                                                        Tidak Lolos Seleksi Administrasi
+                                                    </option>
+                                                    <option value="Seleksi Tes Tulis"
+                                                        {{ request('status') == 'Seleksi Tes Tulis' ? 'selected' : '' }}>
+                                                        Seleksi Tes Tulis
+                                                    </option>
+                                                    <option value="Lolos Seleksi Tes Tulis"
+                                                        {{ request('status') == 'Lolos Seleksi Tes Tulis' ? 'selected' : '' }}>
+                                                        Lolos Seleksi Tes Tulis
+                                                    </option>
+                                                    <option value="Tidak Lolos Seleksi Tes Tulis"
+                                                        {{ request('status') == 'Tidak Lolos Seleksi Tes Tulis' ? 'selected' : '' }}>
+                                                        Tidak Lolos Seleksi Tes Tulis
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="positionFilter" class="form-label">Posisi</label>
+                                                <select class="form-select" name="position" id="positionFilter">
+                                                    <option value="">Semua Posisi</option>
+                                                    {{-- Loop ini mengambil data $positions dari controller --}}
+                                                    @foreach ($positions as $position)
+                                                        <option value="{{ $position->id }}"
+                                                            {{ request('position') == $position->id ? 'selected' : '' }}>
+                                                            {{ $position->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="{{ route('applicant.index') }}"
+                                                class="btn btn-secondary">Reset</a>
+                                            <button type="submit" class="btn btn-primary">Terapkan Filter</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     <!-- Selesai -->
 

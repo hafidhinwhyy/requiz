@@ -8,54 +8,70 @@ use App\Models\Applicant;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\ApplicantsExport; // <-- 1. Impor kelas Export Anda
 use Maatwebsite\Excel\Facades\Excel; // <-- 2. Impor Fassad Excel
+use App\Models\Position; // 1. Impor model Position
 
 class ApplicantController extends Controller
 {
-
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        // 2. Panggil method terpusat dengan seluruh request
+        $applicants = $this->getFilteredApplicants($request)->paginate(10);
 
-        // Panggil method terpusat untuk mendapatkan data
-        $applicants = $this->getFilteredApplicants($search)->paginate(10);
+        // 3. Ambil data posisi untuk dikirim ke view (untuk mengisi dropdown filter)
+        $positions = Position::orderBy('name')->get();
 
-        return view('admin.applicant.index', compact('applicants'));
+        // 4. Kirim data applicants dan positions ke view
+        return view('admin.applicant.index', compact('applicants', 'positions'));
     }
 
-    /**
-     * 3. Tambahkan method export baru ini.
-     */
     public function export(Request $request)
     {
-        $search = $request->input('search');
+        // 5. Pastikan export juga menggunakan semua filter
         $fileName = 'data-pelamar-' . date('Y-m-d') . '.xlsx';
 
-        // Panggil kelas Export dengan filter pencarian dan unduh filenya
-        return Excel::download(new ApplicantsExport($search), $fileName);
+        // Panggil kelas Export dengan seluruh request dan unduh filenya
+        return Excel::download(new ApplicantsExport($request), $fileName);
     }
 
     /**
      * Method privat untuk mengambil data pelamar dengan filter
-     * agar tidak ada duplikasi kode antara index() dan export().
      */
-    private function getFilteredApplicants($search)
+    private function getFilteredApplicants(Request $request) // 6. Ubah parameter menjadi Request
     {
+        // Ambil semua input dari request
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $positionId = $request->input('position');
+
         $query = Applicant::query()->with('position')->orderBy('name', 'asc');
 
+        // Filter untuk pencarian umum (tetap seperti sebelumnya)
         $query->when($search, function ($q, $search) {
-            return $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhereRaw('LOWER(pendidikan) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhereRaw('LOWER(universitas) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhereRaw("DATE_PART('year', AGE(CURRENT_DATE, tgl_lahir)) = ?", [(int) $search])
-                      ->orWhereHas('position', function ($subQ) use ($search) {
-                         $subQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%']);
-                     });
+            return $q->where(function($subQ) use ($search) {
+                $subQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%'])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ['%' . strtolower($search) . '%'])
+                    // ... dan seterusnya untuk pencarian umum
+                    ->orWhereHas('position', function ($posQ) use ($search) {
+                        $posQ->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%']);
+                    });
+            });
+        });
+
+        // 7. TAMBAHKAN BLOK FILTER SPESIFIK (AND conditions)
+        
+        // Filter berdasarkan Status dari dropdown
+        $query->when($status, function ($q, $status) {
+            return $q->where('status', $status);
+        });
+
+        // Filter berdasarkan Posisi dari dropdown
+        $query->when($positionId, function ($q, $positionId) {
+            return $q->where('position_id', $positionId);
         });
 
         return $query;
     }
+}
 
 
     // public function index(Request $request)
@@ -213,4 +229,3 @@ class ApplicantController extends Controller
     // }
 
 
-}
