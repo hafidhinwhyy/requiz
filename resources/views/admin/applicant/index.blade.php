@@ -10,15 +10,24 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <!-- Form Pencarian Mulai -->
-                    <div class="d-flex justify-content-end mb-3">
+                    <!-- Baris untuk Form Pencarian dan Tombol Export -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <!-- Tombol Export Excel -->
+                        <div>
+                            {{-- Tombol ini mengarah ke route export dengan membawa parameter pencarian saat ini --}}
+                            <a href="{{ route('admin.applicant.export', ['search' => request('search')]) }}"
+                                class="btn btn-success">
+                                Export Excel
+                            </a>
+                        </div>
+                        <!-- Form Pencarian -->
                         <form action="{{ route('applicant.index') }}" method="GET" class="d-flex">
                             <input type="text" class="form-control me-2" name="search" placeholder="Search.."
                                 value="{{ request('search') }}">
                             <button class="btn btn-primary" type="submit">Cari</button>
                         </form>
                     </div>
-                    <!-- Form Pencarian Selesai -->
+                    <!-- Selesai -->
 
                     <div class="table-responsive">
                         <table class="table table-striped">

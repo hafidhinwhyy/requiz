@@ -64,6 +64,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('admin/applicant/{id}/show', [ApplicantController::class, 'show'])->name('applicant.show');
     Route::put('/admin/applicant/{id}', [ApplicantController::class, 'update'])->name('applicant.update');
     Route::post('/admin/applicant/update-status', [ApplicantController::class, 'updateStatus'])->name('applicant.update.status');
+
+    Route::get('/admin/applicant/export', [ApplicantController::class, 'export'])->name('admin.applicant.export');
+
     
     // Menampilkan daftar test
     Route::get('admin/test', [TestController::class, 'index'])->name('test.index');
