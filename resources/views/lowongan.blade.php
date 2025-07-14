@@ -127,7 +127,7 @@
                                                     <label class="form-label">Nama Lengkap</label>
                                                     <input type="text" name="name"
                                                         class="form-control @error('name') is-invalid @enderror"
-                                                        value="{{ old('name') }}" required autofocus>
+                                                        value="{{ old('name', auth()->user()->name) }}" required>
                                                     @error('name')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
@@ -137,7 +137,7 @@
                                                     <label class="form-label">Email</label>
                                                     <input type="email" name="email"
                                                         class="form-control @error('email') is-invalid @enderror"
-                                                        value="{{ old('email') }}" required>
+                                                        value="{{ old('name', auth()->user()->email) }}" required>
                                                     @error('email')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
@@ -278,7 +278,6 @@
                                                         @endforeach
                                                     </div>
                                                 </div>
-
 
                                                 <div class="col-md-12">
                                                     <label class="form-label">CV dan Dokumen Tambahan (PDF, Max
