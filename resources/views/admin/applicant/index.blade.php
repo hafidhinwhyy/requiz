@@ -221,7 +221,7 @@
                                                             <div class="col-md-6">
                                                                 <label class="form-label">Status</label>
                                                                 <select name="status" class="form-select" required>
-                                                                    @foreach (['Seleksi Administrasi', 'Tidak Lolos Seleksi Administrasi', 'Seleksi Tes Tulis'] as $status)
+                                                                    @foreach (['Seleksi Administrasi', 'Tidak Lolos Seleksi Administrasi', 'Seleksi Tes Tulis', 'Lolos Seleksi Tes Tulis', 'Tidak Lolos Seleksi Tes Tulis'] as $status)
                                                                         <option value="{{ $status }}"
                                                                             {{ $applicant->status == $status ? 'selected' : '' }}>
                                                                             {{ $status }}
