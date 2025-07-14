@@ -14,15 +14,19 @@ class LowonganController extends Controller
 {
     public function index()
     {
+        // Mengambil posisi yang statusnya 'Active' DAN batch terkaitnya juga 'Active'
         $positions = Position::withCount('applicants')
-                            ->where('status', 'Active')
-                            ->orderBy('id', 'asc')
-                            ->get();
+            ->where('status', 'Active') // 1. Filter status di tabel 'positions'
+            ->whereHas('batch', function ($query) { // 2. Tambahkan filter berdasarkan relasi 'batch'
+                $query->where('status', 'Active'); // 3. Pastikan status di tabel 'batches' adalah 'Active'
+            })
+            ->orderBy('id', 'asc')
+            ->get();
 
-        // Ambil batch_id yang sudah dilamar oleh user
+        // Bagian ini tetap sama untuk mengecek riwayat lamaran user
         $appliedBatchIds = Applicant::where('user_id', auth()->id())
-                                    ->pluck('batch_id')
-                                    ->toArray();
+            ->pluck('batch_id')
+            ->toArray();
 
         return view('lowongan', compact('positions', 'appliedBatchIds'));
     }
