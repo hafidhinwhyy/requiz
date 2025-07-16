@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             BatchSeeder::class,
             ApplicantSeeder::class,
+            QuestionSeeder::class,
         ]);
 
     }

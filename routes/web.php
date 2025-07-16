@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminPanel\AdminController;
 use App\Http\Controllers\AdminPanel\BatchController;
 use App\Http\Controllers\AdminPanel\PositionController;
 use App\Http\Controllers\AdminPanel\ApplicantController;
+use App\Http\Controllers\AdminPanel\QuestionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,15 +65,23 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/applicant/export', [ApplicantController::class, 'export'])->name('admin.applicant.export');
     Route::put('admin/applicant/{applicant}', [ApplicantController::class, 'update'])->name('admin.applicant.update');
     Route::delete('admin/applicant/{applicant}', [ApplicantController::class, 'destroy'])->name('admin.applicant.destroy');
-
     
     // Menampilkan daftar test
     Route::get('admin/test', [TestController::class, 'index'])->name('test.index');
-    Route::get('admin/test/create', [TestController::class, 'create'])->name('test.create');
+    // Route::get('admin/test/create', [TestController::class, 'create'])->name('test.create');
     Route::post('admin/test', [TestController::class, 'store'])->name('test.store');
-    Route::get('admin/test/{id}/edit', [TestController::class, 'edit'])->name('test.edit');
+    // Route::get('admin/test/{id}/edit', [TestController::class, 'edit'])->name('test.edit');
     Route::put('admin/test/{id}', [TestController::class, 'update'])->name('test.update');
     Route::delete('admin/test/{id}', [TestController::class, 'destroy'])->name('test.destroy');
-    Route::get('admin/test/{id}', [TestController::class, 'show'])->name('test.show');
+    // Route::get('admin/test/{id}', [TestController::class, 'show'])->name('test.show');
     Route::get('admin/test/checkSlug', [TestController::class, 'checkSlug'])->name('test.checkSlug');
+
+    // Question
+    Route::get('admin/question', [QuestionController::class, 'index'])->name('question.index');
+    Route::post('admin/question', [QuestionController::class, 'store'])->name('question.store');
+    Route::put('admin/question/{question}', [QuestionController::class, 'update'])->name('question.update'); 
+    Route::delete('admin/question/{question}', [QuestionController::class, 'destroy'])->name('question.destroy');
+    // Route untuk fitur import Excel
+    Route::post('admin/question/import', [QuestionController::class, 'import'])->name('question.import');
+    Route::get('admin/question/template', [QuestionController::class, 'downloadTemplate'])->name('question.template');
 });
