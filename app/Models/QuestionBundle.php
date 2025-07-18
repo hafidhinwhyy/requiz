@@ -9,9 +9,14 @@ class QuestionBundle extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'description',
+    ];
+
     public function questions()
     {
-        return $this->belongsToMany(Question::class, 'bundle_question');
+        return $this->belongsToMany(Question::class, 'bundle_questions');
     }
 
     public function sections()
