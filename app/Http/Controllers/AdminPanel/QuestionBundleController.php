@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\QuestionBundle;
 use App\Models\Question; // <-- Tambahkan ini
+use \Cviebrock\EloquentSluggable\Services\SlugService;
 
 class QuestionBundleController extends Controller
 {
@@ -14,23 +15,36 @@ class QuestionBundleController extends Controller
      */
     public function index()
     {
-        // Gunakan withCount untuk efisiensi, kita tidak perlu memuat semua soal di sini.
-        $bundles = QuestionBundle::withCount('questions')->latest()->get();
-        $allQuestions = Question::all();
-
-        return view('admin.bundle.index', compact('bundles', 'allQuestions'));
+        $bundles = QuestionBundle::withCount('questions')->latest()->paginate(9);
+        
+        // Variabel $allQuestions dihapus karena tidak digunakan di view index
+        return view('admin.bundle.index', compact('bundles'));
     }
 
     /**
-     * Mengambil daftar soal dalam bentuk partial view untuk AJAX.
+     * Menampilkan halaman detail untuk satu bundle dengan soal yang dipaginasi.
      */
-    public function fetchQuestions(QuestionBundle $bundle)
+    public function show(QuestionBundle $bundle)
     {
-        // Lakukan paginasi seperti biasa
-        $questionsInBundle = $bundle->questions()->paginate(10, ['*'], 'page', request('page'));
+        // 1. Ambil soal yang SUDAH ADA di dalam bundle dan paginasi hasilnya.
+        // Ini untuk ditampilkan di tabel utama halaman detail.
+        $questionsInBundle = $bundle->questions()->paginate(10);
 
-        // Kembalikan hanya view partial, bukan layout lengkap
-        return view('admin.bundle.partials.question-table', compact('bundle', 'questionsInBundle'));
+        // 2. OPTIMASI: Ambil soal yang BELUM ADA di dalam bundle untuk modal.
+        // Langkah ini jauh lebih efisien daripada Question::all().
+
+        // 2a. Dapatkan semua ID soal yang sudah ada di dalam bundle ini.
+        $existingQuestionIds = $bundle->questions()->pluck('questions.id');
+
+        // 2b. Ambil semua soal dari tabel 'questions' KECUALI yang ID-nya sudah ada.
+        $availableQuestions = Question::whereNotIn('id', $existingQuestionIds)->get();
+
+        // 3. Kirim semua data yang diperlukan ke view.
+        return view('admin.bundle.show', compact(
+            'bundle',
+            'questionsInBundle',
+            'availableQuestions'
+        ));
     }
 
     /**
@@ -39,20 +53,36 @@ class QuestionBundleController extends Controller
     public function store(Request $request)
     {
         // 1. Validasi input dari form
-        $request->validate([
-            'name' => 'required|string|max:255',
+        // Tambahkan validasi 'unique' untuk mencegah nama bundle yang sama
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:question_bundles,name',
             'description' => 'nullable|string',
         ]);
 
-        // 2. Buat data baru menggunakan model
-        QuestionBundle::create([
-            'name' => $request->name,
-            'description' => $request->description,
-        ]);
+        // 2. Buat data baru (CARA YANG DIPERBAIKI)
+        // Jangan gunakan ::create() secara langsung jika ada properti (seperti slug)
+        // yang dibuat secara otomatis oleh model event.
+
+        // Buat instance model baru
+        $bundle = new QuestionBundle();
+
+        // Isi propertinya dari data yang sudah divalidasi
+        $bundle->name = $validated['name'];
+        $bundle->description = $validated['description'];
+
+        // Simpan model. Method save() akan memicu event 'creating'
+        // yang akan menjalankan package sluggable untuk mengisi $bundle->slug secara otomatis.
+        $bundle->save();
 
         // 3. Redirect kembali ke halaman index dengan pesan sukses
         return redirect()->route('bundle.index')
-                         ->with('success', 'Bundle baru berhasil dibuat!');
+                        ->with('success', 'Bundle baru berhasil dibuat!');
+    }
+
+    public function checkSlug(Request $request)
+    {
+        $slug = SlugService::createSlug(QuestionBundle::class, 'slug', $request->name);
+        return response()->json(['slug' => $slug]);
     }
 
     public function update(Request $request, QuestionBundle $bundle)
@@ -116,4 +146,6 @@ class QuestionBundleController extends Controller
 
         return redirect()->back()->with('success', 'Soal berhasil dihapus dari bundle!');
     }
+
+    
 }

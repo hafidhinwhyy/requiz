@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->enum('status', ['Active', 'Closed'])->default('Closed');
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

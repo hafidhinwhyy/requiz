@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('batch_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->smallInteger('quota');
             $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->text('description');
