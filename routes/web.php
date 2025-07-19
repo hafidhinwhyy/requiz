@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminPanel\AdminController;
 use App\Http\Controllers\AdminPanel\BatchController;
 use App\Http\Controllers\AdminPanel\PositionController;
 use App\Http\Controllers\AdminPanel\ApplicantController;
+use App\Http\Controllers\AdminPanel\QuestionBundleController;
 use App\Http\Controllers\AdminPanel\QuestionController;
 
 /*
@@ -84,4 +85,20 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Route untuk fitur import Excel
     Route::post('admin/question/import', [QuestionController::class, 'import'])->name('question.import');
     Route::get('admin/question/template', [QuestionController::class, 'downloadTemplate'])->name('question.template');
+
+    Route::get('admin/bundle', [QuestionBundleController::class, 'index'])->name('bundle.index');
+    Route::get('admin/bundle/{bundle}/questions', [QuestionBundleController::class, 'fetchQuestions'])
+      ->name('bundle.questions.fetch');
+    Route::post('admin/bundle', [QuestionBundleController::class, 'store'])->name('bundle.store');
+    Route::put('admin/bundle/{bundle}', [QuestionBundleController::class, 'update'])->name('bundle.update');
+    Route::delete('admin/bundle/{bundle}', [QuestionBundleController::class, 'destroy'])->name('bundle.destroy');
+
+    // Route untuk menambah soal ke bundle tertentu
+    Route::post('bundle/{bundle}/questions', [QuestionBundleController::class, 'addQuestion'])
+        ->name('bundle.questions.add');
+
+    // Route untuk menghapus soal dari bundle tertentu
+    Route::delete('bundle/{bundle}/questions/{question}', [QuestionBundleController::class, 'removeQuestion'])
+        ->name('bundle.questions.remove');
+
 });
