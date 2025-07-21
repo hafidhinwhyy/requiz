@@ -1,5 +1,5 @@
 {{-- File ini hanya berisi tabel dan link paginasi --}}
-<div class="table-responsive">
+{{-- <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead>
             <tr>
@@ -28,9 +28,9 @@
             @endforelse
         </tbody>
     </table>
-</div>
+</div> --}}
 
 {{-- Link Paginasi --}}
-<div class="mt-4">
+{{-- <div class="mt-4">
     {{ $questionsInBundle->links() }}
-</div>
+</div> --}}
