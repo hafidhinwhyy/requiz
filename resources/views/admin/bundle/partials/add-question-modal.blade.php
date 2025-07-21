@@ -76,6 +76,4 @@
 </div>
 
 {{-- JAVASCRIPT ANDA TETAP SAMA DAN TIDAK PERLU DIUBAH --}}
-<script>
-    // ... Kode JavaScript dari jawaban sebelumnya tidak perlu diubah ...
-</script>
+<script></script>
